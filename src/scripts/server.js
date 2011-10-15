@@ -2,7 +2,9 @@ function sendRequest(event){
 	var changed, val;
 	changed = this.id;
 	val = this.value;
-	new Ajax.Request("/" ,{
+	alert(val);
+	alert(changed);
+	new Ajax.Request("file://" ,{
 		method:"post",
 		parameters:{changed:val},
 		onFailure: displayError
