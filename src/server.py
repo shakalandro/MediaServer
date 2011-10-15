@@ -10,18 +10,19 @@ import subprocess
 import socket
 import BaseHTTPServer
 import tempfile
+#import vlc
 from django import template
 from django.conf import settings
 settings.configure()
 
 
-def get_index(path='../..'):
+def get_index(path='../..', template_path='server.html'):
     movie_files = ['avi', 'mpg', 'wmv', 'mp4', 'mov', 'mkv', 'flv', 'rm', 'dv']
     audio_files = ['mp3', 'wav']
-    t = template.Template(open('index.html', 'r').read())
+    t = template.Template(open(template_path, 'r').read())
     c = template.Context({
-        'Movies': os.listdir(path).filter(lambda x: x in movie_files),
-        'Music': os.listdir(path).filter(lambda x: x in audio_files)
+        'Movies': filter(lambda x: os.path.splitext(x)[1] in movie_files, os.listdir(path)),
+        'Music': filter(lambda x: os.path.splitext(x)[1] in audio_files, os.listdir(path))
     })
     return t.render(c)
 
@@ -72,8 +73,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
                                    '#standard{access=http,mux=avi,dst=localhost:8888}'])
             self.processes[self.client_address] = vlc
             self.wfile.write('New process created: 8888')
-        print 'done'
-        return 
+        return
     
     def do_GET(self):
         client_host, client_port = self.client_address

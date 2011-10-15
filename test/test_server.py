@@ -11,8 +11,6 @@ import server
 import httplib
 
 
-print sys.path
-
 class ServerTest(unittest.TestCase):
     server_inst = subprocess.Popen('python ../server.py', shell=True)
         
@@ -20,8 +18,7 @@ class ServerTest(unittest.TestCase):
         self.server_inst.terminate()
     
     def testGetIndex(self):
-        expected = ['2.avi', 'beamup.avi', 'bg-for zoom title.avi', 'bloodspurt1.avi']
-        self.assertEqual(server.get_index('./data'), expected)
+        self.assertTrue(server.get_index('./data', '../src/server.html'), expected)
 
     def testConnect(self):
         connection = httplib.HTTPConnection('localhost:8888')
