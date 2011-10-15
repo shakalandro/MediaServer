@@ -22,7 +22,7 @@ settings.configure()
 def get_index(path='..', template_path='src/server.html.tmpl'):
     movie_files = ['avi', 'mpg', 'wmv', 'mp4', 'mov', 'mkv', 'flv', 'rm', 'dv']
     audio_files = ['mp3', 'wav']
-    nocrawl = open('nocrawl')
+    nocrawl = open('src/nocrawl')
     omitRE = nocrawl.read().strip()
     t = template.Template(open(template_path, 'r').read())
     c = template.Context({
