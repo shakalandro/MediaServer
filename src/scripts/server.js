@@ -1,14 +1,22 @@
 function sendRequest(event){
-	var changed, val;
+	var changed, val, param;
 	changed = this.id;
 	val = this.value;
-	alert(val);
-	alert(changed);
-	new Ajax.Request("file://" ,{
-		method:"post",
-		parameters:{changed:val},
-		onFailure: displayError
-	});
+	param = "" + changed + "=" + val;
+	
+	 $.ajax({
+        url: "http://10.0.7.112:8888",
+        type: "POST",
+        data: param,
+        success: function(data){
+        	alert("worked");
+        }
+    });
+
+}
+
+function worked(ajax){
+	alert("returned");	
 }
 
 function displayError(){
@@ -16,7 +24,7 @@ function displayError(){
 }
 
 window.onload = function(){
-	$("quality").onchange = sendRequest;
-	$("video").onchange = sendRequest;
-	$("music").onchange = sendRequest;
+	$("#quality").change(sendRequest);
+	$("#video").change(sendRequest);
+	$("#music").change(sendRequest);
 }
