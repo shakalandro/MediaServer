@@ -16,13 +16,13 @@ from django.conf import settings
 settings.configure()
 
 
-def get_index(path='../..', template_path='server.html'):
+def get_index(path='..', template_path='src/server.html'):
     movie_files = ['avi', 'mpg', 'wmv', 'mp4', 'mov', 'mkv', 'flv', 'rm', 'dv']
     audio_files = ['mp3', 'wav']
     t = template.Template(open(template_path, 'r').read())
     c = template.Context({
-        'Movies': filter(lambda x: os.path.splitext(x)[1] in movie_files, os.listdir(path)),
-        'Music': filter(lambda x: os.path.splitext(x)[1] in audio_files, os.listdir(path))
+        'Movies': filter(lambda x: os.path.splitext(x)[1][1:] in movie_files, os.listdir(path)),
+        'Music': filter(lambda x: os.path.splitext(x)[1][1:] in audio_files, os.listdir(path))
     })
     return t.render(c)
 
@@ -81,7 +81,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-Type', 'text/html')
         self.end_headers()
-        self.wfile.write(get_index())
+        self.wfile.write(get_index('/Users/shakalandro/Movies'))
         
     def do_POST(self):
         self.send_response(200)

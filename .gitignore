@@ -1,5 +1,7 @@
 .project
 .pydevproject
 .DS_Store
+err.txt
+tmp.txt
 *.pyc
 *.pyo

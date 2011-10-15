@@ -4,6 +4,7 @@ Created on Oct 14, 2011
 @author: shakalandro
 '''
 
+import os
 import sys
 import subprocess
 import unittest
@@ -18,7 +19,7 @@ class ServerTest(unittest.TestCase):
         self.server_inst.terminate()
     
     def testGetIndex(self):
-        self.assertTrue(server.get_index('./data', '../src/server.html'), expected)
+        self.assertTrue(server.get_index('./data', '../src/server.html'))
 
     def testConnect(self):
         connection = httplib.HTTPConnection('localhost:8888')
