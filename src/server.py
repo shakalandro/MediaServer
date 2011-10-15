@@ -7,27 +7,22 @@ Created on Oct 14, 2011
 import cgi
 import os
 import sys
-import json
-import command
 import subprocess
 import socket
-import SocketServer
 import BaseHTTPServer
-import CGIHTTPServer
 import tempfile
 import threading
 import re
 from django import template
 from django.conf import settings
-from logging.handlers import SocketHandler
-from process_pile import fetch_process
 settings.configure()
 
 
 def get_index(path='..', template_path='src/server.html.tmpl'):
-    movie_files = ['avi', 'mpg', 'wmv', 'mp4', 'mov', 'mkv', 'flv', 'rm', 'dv']
+    movie_files = ['avi', 'm4v', 'mpg', 'wmv', 'mp4', 'mov', 'mkv', 'flv', 'rm', 'dv']
     audio_files = ['mp3', 'wav']
     nocrawl = open('src/nocrawl')
+    print os.listdir(path)
     omitRE = nocrawl.read().strip()
     t = template.Template(open(template_path, 'r').read())
     c = template.Context({
@@ -65,7 +60,6 @@ class VLCProcess(subprocess.Popen):
     def Make(path, args_list):
         command = VLCProcess.GetVlcCommand()
         args_list = VLCProcess.BuildArgs(path, args_list)
-        print list([command]) + args_list
         return VLCProcess(list([command]) + args_list)
 
     @staticmethod
@@ -131,7 +125,8 @@ class VLCThread(threading.Thread):
         return self.port_num
         
     def run(self):
-        vlc = VLCProcess.Make('/Users/shakalandro/Movies', self.form)
+        print 'Streaming %s to %s on port %s' % (self.form['video'], self.client, self.form['port'])
+        vlc = VLCProcess.Make('..', self.form)
         processes[self.client] = vlc
 
  
@@ -142,7 +137,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(get_index('/Users/shakalandro/Movies'))
+        self.wfile.write(get_index('..'))
         
     def do_POST(self):
         form = cgi.FieldStorage(

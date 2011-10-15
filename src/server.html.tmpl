@@ -15,11 +15,13 @@
           },
           success: function(data) {
             vlc.playlist.stop();
+            vlc.playlist.clear();
             setTimeout(function() {
+              console.log('playing');
               if (vlc.playlist.items.count <= 0)
-                vlc.playlist.add('http://10.0.7.112:' + port);
+                vlc.playlist.add('http://10.0.7.112:' + data);
               vlc.playlist.play();
-            }, 5000)
+            }, 5000);
           }
         });
       }
@@ -173,12 +175,14 @@
 	  		      <option>{{item}}</option>
 	  		      {% endfor %}
 	  		    </select>
+	  		    <!--
 	  		    <select id="music" class='media'>
 	  		      <option>--none--</option>
 	  		      {% for item in Music %}
 	  		      <option>{{item}}</option>
 	  		      {% endfor %}
 	  		    </select>
+	  		    -->
 	  		    <select id="quality" class='media'>
 	  		    	<option value='2048'>High</option>
 	  		    	<option value='1024'>Medium</option>
