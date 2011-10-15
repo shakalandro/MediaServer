@@ -46,7 +46,24 @@
         $('#fullscreen').click(function() {
           vlc.video.toggleFullscreen();
         });
+        $('#ff').click(function(){
+        	vlc.input.rate = 2.0;
+        });
+        $('#rw').click(function(){
+        	vlc.input.rate = -2.0;
+        });
         $('#slider').slider();
+        $('#slider').slider("option","min", 0);
+        $('#slider').slider("option","max", 1.0);
+        $('#slider').slider("option","step", .01);
+        $('#slider').slider("option","value", 0);
+        $('#slider').slider({
+        	slide: function(event, ui){
+        		var length = vlc.input.length;
+        		var seek = length * ui.value;
+        		vlc.input.time = vlc.input.time + (seek - vlc.input.time);	
+        	}
+        });
         $('#volume').slider();
         $('#volume').slider("option","min",0);
         $('#volume').slider("option","max",100);
@@ -77,93 +94,118 @@
       body{
         margin:0px;
         font-family: "Lucida Grande", Helvetica;
-        background-image:url("outer_background.png");
+        background-image:url("http://dl.dropbox.com/u/13160585/outer_background.png");
       }
-      #controls, #selections{
+      #selections{
         text-align:center;
         width:100%;
+      }
+      #controls{
+      	width:640px;
+      	margin-left:auto;
+      	margin-right:auto;	
       }
       #content{
         width: 1200;
         background-color:rgb(80,80,80);
       }
-      #controls li {
-        list-style-type: none;
-        display: inline;
-      }
       #slider {
-        width:99.75%;
+        width:640px;
         border-style:solid;
         border-width:1px;
         border-color:black;
         height:10px;
-        background-color:white;
-      }
-      #player{
-        padding-top:50px;
-        width:640px;
+        background-color:rgb(200,200,200);
         margin-left:auto;
         margin-right:auto;
       }
-      #placeholder, #playpause, #next, #fullscreen, #mute {
+      #player{
+      	text-align:center;
+        padding-top:50px;
+      }
+      
+      #volume_control{
+      	float:left;
+        height:20px;
+        background-color:rgb(50,50,50);
+        border-style:solid;
+        border-color:black;
+        border-width:1px; 
+        padding:3px;
+      }
+      #placeholder, #playpause, #next, #fullscreen, #mute,#ff,#rw {
         float:left;
-        text-align:center;
+        color:rgb(180,180,180);
+        background-color:rgb(50,50,50);
         width:23.9%;
         height:20px;
-        background-color:white;
         border-style:solid;
         border-color:black;
         border-width:1px; 
         padding:3px;
       }
       #selections {
-        clear: both;
+		padding-top:30px;
       }
       #volume{
-      	margin-top:40px;
-      	background-color:white;
-      	width:300px;
+      	background-color:rgb(180,180,180);
+      	width:200px;
+      	height:10px;
+      	margin-left:auto;
+		margin-top:3px;
+      	margin-right:auto;
       }
-      #volume_value{
-      	display:inline;
+      #volume_control{
+		width:48.8%;
+      }
+      .ui-slider-horizontal .ui-state-default {
+      	margin-top:3px;
+      	margin-left:-2px;
+      	width:12px;
+      	height:12px;
       }
     </style>
-  </head>
-  <body>
+ </head>
+ <body>
     <div id="outer_border">
 	  	<div id="content">
+	  	    <div id="selections">
+	  		    <select id="video" class='media'>
+	  		      <option>--none--</option>
+	  		      {% for item in Movies %}
+	  		      <option>{{item}}</option>
+	  		      {% endfor %}
+	  		    </select>
+	  		    <select id="music" class='media'>
+	  		      <option>--none--</option>
+	  		      {% for item in Music %}
+	  		      <option>{{item}}</option>
+	  		      {% endfor %}
+	  		    </select>
+	  		    <select id="quality" class='media'>
+	  		    	<option value='2048'>High</option>
+	  		    	<option value='1024'>Medium</option>
+	  		    	<option value='512'>Low</option>
+	  		    	<option value='256'>Very Low</option>
+	  		    </select>
+  			</div>
 		  	<div id="player">
 		    	<embed id='vlc' type="application/x-vlc-plugin" name="video2"
               autoplay="no" loop="no" hidden="yes" width=640 height=480 />
 		      <div id="slider"></div>
-		      <div id="controls"></div>
-		      <div id="playpause">Pause</div>
-		      <div id="next">Next</div>
-		      <div id="fullscreen">Fullscreen</div>
-		      Volume: <div id="volume">
-  			</div>
-  	    <div id="selections">
-  		    <select id="video" class='media'>
-  		      <option>--none--</option>
-  		      {% for item in Movies %}
-  		      <option>{{item}}</option>
-  		      {% endfor %}
-  		    </select>
-  		    <select id="music" class='media'>
-  		      <option>--none--</option>
-  		      {% for item in Music %}
-  		      <option>{{item}}</option>
-  		      {% endfor %}
-  		    </select>
-  		    <select id="quality" class='media'>
-  		    	<option value='2048'>High</option>
-  		    	<option value='1024'>Medium</option>
-  		    	<option value='512'>Low</option>
-  		    	<option value='256'>Very Low</option>
-  		    </select>
-  		    <div id="mute">Mute</div>
-  		</div>
+		      <div id="controls">
+			      <div id="playpause">Pause</div>
+			      <div id="next">Next</div>
+			      <div id="fullscreen">Fullscreen</div>
+			      <div id="mute">Mute</div>
+  			 	  <div id="ff">FF</div>
+  			 	  <div id="rw">RW</div>
+  			 	  <div id="volume_control">
+  			 	 	 <div id="volume"></div>
+  			 	  </div>
+			  </div>
+			</div>
 		</div>
 	</div>
-    </body>
+ </body>
 </html>
