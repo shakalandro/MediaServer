@@ -9,19 +9,41 @@ import sys
 import subprocess
 import socket
 import BaseHTTPServer
-import django.template
+import tempfile
+from django import template
+from django.conf import settings
+settings.configure()
+
 
 def get_index(path='../..'):
-    return os.listdir(path)
+    movie_files = ['avi', 'mpg', 'wmv', 'mp4', 'mov', 'mkv', 'flv', 'rm', 'dv']
+    audio_files = ['mp3', 'wav']
+    t = template.Template(open('index.html', 'r').read())
+    c = template.Context({
+        'Movies': os.listdir(path).filter(lambda x: x in movie_files),
+        'Music': os.listdir(path).filter(lambda x: x in audio_files)
+    })
+    return t.render(c)
 
 
 class VLCProcess(subprocess.Popen):
+    def __init__(self, *args):
+        self.instr = tempfile.mkstemp()[0]
+        self.outstr = tempfile.mkstemp()[0]
+        super(VLCProcess, self).__init__(*args, stdout=self.outstr, stderr=self.outstr,
+                                         stdin=self.instr)
     
+    def get_out(self):
+        return self.outstr.read()
+
+    def put_in(self, val):
+        self.instr.write(val)
+
     @staticmethod
-    def Make(self, args_list):
+    def Make(args_list):
         command = VLCProcess.VlcCommand()
-        print command
-        return VLCProcess(list(command, *args_list))
+        print list([command]) + args_list
+        return VLCProcess(list([command]) + args_list)
 
     @staticmethod
     def VlcCommand():
@@ -40,16 +62,17 @@ class VLCProcess(subprocess.Popen):
 
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     processes = {}
-    
     def fetch_process(self):
         vlc = None
         if self.client_address in self.processes:
             vlc = self.processes[self.client_address]
             self.wfile.write('Old process found: 8888')
         else:
-            vlc[self.client_address] = VLCProcess(['-I', 'rc', '../test/data/2.avi', '-sout',
-                                                   '#standard{access=http,mux=ts,dst=localhost:8888}'])
+            vlc = VLCProcess.Make(['-I', 'rc', 'test/data/2.avi', '--sout',
+                                   '#standard{access=http,mux=avi,dst=localhost:8888}'])
+            self.processes[self.client_address] = vlc
             self.wfile.write('New process created: 8888')
+        print 'done'
         return 
     
     def do_GET(self):
@@ -58,8 +81,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-Type', 'text/html')
         self.end_headers()
-        self.wfile.write('Hello')
-        vlc = self.fetch_process()
+        self.wfile.write(get_index())
         
     def do_POST(self):
         self.send_response(200)
