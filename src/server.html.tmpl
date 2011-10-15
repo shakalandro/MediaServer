@@ -5,6 +5,8 @@
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
     <script type="text/javascript">
+      var serverIP;
+    
       function sendRequest() {
         $.ajax({
           url: "/stream:8888",
@@ -14,25 +16,38 @@
             'quality': $('#quality').val()
           },
           success: function(data) {
-            vlc.playlist.stop();
-            setTimeout(function() {
-              if (vlc.playlist.items.count <= 0)
-                vlc.playlist.add('http://10.0.7.112:' + port);
-              vlc.playlist.play();
-            }, 5000)
+            console.log('http://:' + 'serverIP' + data);
           }
         });
+        vlc.playlist.stop();
+        setTimeout(function() {
+          console.log('playing');
+          if (vlc.playlist.items.count <= 0)
+            vlc.playlist.add('http://' + serverIP + ':33453');
+          vlc.playlist.play();
+        }, 5000)
       }
   
+  		function getIP(){
+  			var url, matched;
+			var url = window.location;
+			re = /[0-9]{1,2}.[0-9]{1,2}.[0-9]{1,2}.[0-9]{1,2}/;
+			matched = re.exec(url);
+			serverIP = matched[0];
+  		}
+  			
+  
       $(document).ready(function() {
+      	getIP();
         var vlc = $('#vlc')[0];
       
         $('#playpause').toggle(function() {
-          vlc.playlist.togglePause();
-        $('#playpause').text("Play");  
+          	vlc.playlist.togglePause();
+        	$('#playpause').text("Play");  
         }, function() {
           vlc.playlist.togglePause();
           $('#playpause').text("Pause");
+         
         });
         $('#prev').click(function() {
           vlc.playlist.prev();
@@ -44,10 +59,22 @@
           vlc.video.toggleFullscreen();
         });
         $('#ff').click(function(){
-        	vlc.input.rate = 2.0;
+        	if($('#ff').text() === "Resume"){
+        		$('#ff').text("FF");
+        		vlc.input.rate = 1.0;
+        	}else{
+        		$('#ff').text("Resume");
+        		vlc.input.rate = 2.0;
+        	}
         });
         $('#rw').click(function(){
-        	vlc.input.rate = -2.0;
+        	if($('#rw').text() === "Resume"){
+        		$('#rw').text("RW");
+        		vlc.input.rate = 1.0;
+        	}else{
+				$('#rw').text("Resume");
+	        	vlc.input.rate = -2.0;
+        	}
         });
         $('#slider').slider();
         $('#slider').slider("option","min", 0);
