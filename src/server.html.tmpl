@@ -16,9 +16,11 @@
             console.log('http://10.0.7.112:' + data);
           }
         });
+        vlc.playlist.stop();
         setTimeout(function() {
           console.log('playing');
-          vlc.playlist.add('http://10.0.7.112:3000');
+          if (vlc.playlist.items.count <= 0)
+            vlc.playlist.add('http://10.0.7.112:33433');
           vlc.playlist.play();
         }, 5000)
         
@@ -28,7 +30,7 @@
       
         $('#playpause').toggle(function() {
           vlc.playlist.togglePause();
-          $('#playpause').text("Play");  
+        $('#playpause').text("Play");  
         }, function() {
           vlc.playlist.togglePause();
           $('#playpause').text("Pause");
@@ -108,8 +110,7 @@
 	  	<div id="content">
 		  	<div id="player">
 		    	<embed id='vlc' type="application/x-vlc-plugin" name="video2"
-              autoplay="no" loop="no" hidden="yes" width=640 height=480
-              target="http://10.0.7.112:3000" />
+              autoplay="no" loop="no" hidden="yes" width=640 height=480 />
 		      <div id="slider"></div>
 		      <div id="controls"></div>
 		      <div id="play">Play</div>
@@ -131,9 +132,10 @@
   		      {% endfor %}
   		    </select>
   		    <select id="quality" class='media'>
-  		    	<option>High</option>
-  		    	<option>Medium</option>
-  		    	<option>Low</option>
+  		    	<option value='2048'>High</option>
+  		    	<option value='1024'>Medium</option>
+  		    	<option value='512'>Low</option>
+  		    	<option value='256'>Very Low</option>
   		    </select>
   		</div>
 		</div>

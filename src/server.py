@@ -13,7 +13,6 @@ import subprocess
 import socket
 import BaseHTTPServer
 import tempfile
-#import vlc
 from django import template
 from django.conf import settings
 settings.configure()
@@ -30,13 +29,22 @@ def get_index(path='..', template_path='src/server.html.tmpl'):
     return t.render(c)
 
 
+class PortBind(object):
+    def __init__(self, num):
+        self.num = str(num)
+        self.used = False
+
+
 class VLCProcess(subprocess.Popen):
+    USED_PORTS = map(lambda x: PortBind(x), range(33433, 33433 + 1000))
+    port_in_use = None
+
     def __init__(self, *args):
         #self.instr = tempfile.mkstemp()[0]
         #self.outstr = tempfile.mkstemp()[0]
         #super(VLCProcess, self).__init__(*args, stdout=self.outstr, stderr=self.outstr,
         #                                 stdin=self.instr)
-        super(VLCProcess, self).__init__(*args, shell=True)
+        super(VLCProcess, self).__init__(*args)
     
     def get_out(self):
         return self.outstr.read()
@@ -45,12 +53,14 @@ class VLCProcess(subprocess.Popen):
         self.instr.write(val)
 
     @staticmethod
-    def Make(args_list):
-        command = VLCProcess.VlcCommand()
-        return VLCProcess('%s %s' % (command, args_list))
+    def Make(path, args_list):
+        command = VLCProcess.GetVlcCommand()
+        args_list = VLCProcess.BuildArgs(path, args_list)
+        print list([command]) + args_list
+        return VLCProcess(list([command]) + args_list)
 
     @staticmethod
-    def VlcCommand():
+    def GetVlcCommand():
         linux = 'linux'
         mac = 'darwin'
         windows = 'win'
@@ -63,16 +73,50 @@ class VLCProcess(subprocess.Popen):
         elif platform.startswith(windows) or platform.startswith(cygwin):
             return 'vlc'
 
+    @staticmethod
+    def AllocatePort():
+        VLCProcess.port_in_use = filter(lambda x: not x.used, VLCProcess.USED_PORTS)[0]
+        VLCProcess.port_in_use.used = True
+        return VLCProcess.port_in_use
+    
+    @staticmethod
+    def FreePort():
+        VLCProcess.port_in_use.used = False
+        VLCProcess.port_in_use = None    
+    
+    @staticmethod
+    def BuildArgs(path, data):
+        file_name = os.path.join(path, data['video'])
+        extension = os.path.splitext(file_name)[1][1:]
+        codecs = {'mp4': 'mp4v', 'm4v': 'h263'}
+        offset = "--start-time " + data['offset'] if 'offset' in data else ''
+        quality = data['quality'] if 'quality' in data else None
+        vcodec = codecs[extension] if extension in codecs else 'mp4v'
+        port = VLCProcess.AllocatePort().num
+        mux = 'ts'
+        ip = socket.gethostbyname_ex(socket.gethostname())[2][0]
+        
+        transcode = 'transcode{vcodec=%s,vb=%s}' % (vcodec, quality)
+        standard = 'standard{mux=%s,dst=%s:%s,access=http}' % (mux, ip, port)
+        sout = standard
+        if quality:
+            sout = '%s:%s' % (transcode, sout)
+        print ['-vvv', '"' + file_name + '"', '-I', 'dummy', '--sout', '"#' + standard + '"']
+        return ['-vvv', '"' + file_name + '"', '-I', 'dummy', '--sout', '"#' + standard + '"']
+
 
 processes = {}
 def fetch_process(client, form):
     vlc = None
     if client in processes:
+        print 'Old Process Found'
         vlc = processes[client]
         vlc.terminate()
-    command.recieve(form)
+        vlc.kill()
+        VLCProcess.FreePort()
     
-    vlc = VLCProcess.Make('-vvv -I dummy /Users/shakalandro/Movies/Rango.m4v --sout "#standard{access=http,mux=ps,dst=10.0.7.112:3000}"')
+    #vlc = VLCProcess.Make('-vvv -I dummy /Users/shakalandro/Movies/Rango.m4v --sout "#standard{access=http,mux=ps,dst=10.0.7.112:3000}"')
+    vlc = VLCProcess.Make('/Users/shakalandro/Movies', form)
     processes[client] = vlc
     print 'New vlc instance created'
    
