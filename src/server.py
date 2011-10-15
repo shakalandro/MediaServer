@@ -22,7 +22,6 @@ def get_index(path='..', template_path='src/server.html.tmpl'):
     movie_files = ['avi', 'm4v', 'mpg', 'wmv', 'mp4', 'mov', 'mkv', 'flv', 'rm', 'dv']
     audio_files = ['mp3', 'wav']
     nocrawl = open('src/nocrawl')
-    print os.listdir(path)
     omitRE = nocrawl.read().strip()
     t = template.Template(open(template_path, 'r').read())
     c = template.Context({
@@ -113,7 +112,6 @@ class VLCThread(threading.Thread):
         self.client = client
         self.form = form
         if self.client in processes:
-            print 'Old Process Found'
             vlc = processes[self.client]
             vlc.terminate()
             vlc.kill()
