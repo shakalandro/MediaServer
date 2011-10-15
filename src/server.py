@@ -100,9 +100,8 @@ class VLCProcess(subprocess.Popen):
         standard = 'standard{mux=%s,dst=%s:%s,access=http}' % (mux, ip, port)
         sout = standard
         if quality:
-            sout = '%s:%s' % (transcode, sout)
-        print ['-vvv', '"' + file_name + '"', '-I', 'dummy', '--sout', '"#' + standard + '"']
-        return ['-vvv', '"' + file_name + '"', '-I', 'dummy', '--sout', '"#' + standard + '"']
+            sout = transcode + ':' + standard
+        return ['-vvv', '%s' % file_name, '-I', 'dummy', '--sout', '#' + sout]
 
 
 processes = {}
@@ -118,7 +117,7 @@ def fetch_process(client, form):
     #vlc = VLCProcess.Make('-vvv -I dummy /Users/shakalandro/Movies/Rango.m4v --sout "#standard{access=http,mux=ps,dst=10.0.7.112:3000}"')
     vlc = VLCProcess.Make('/Users/shakalandro/Movies', form)
     processes[client] = vlc
-    print 'New vlc instance created'
+    return VLCProcess.port_in_use
    
  
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -140,10 +139,12 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         data = {}
         for field in form.keys():
             data[field] = form[field].value
-        fetch_process(self.client_address, data)
+        port = fetch_process(self.client_address, data)
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
+        self.wfile.write(port)
+        self.wfile.flush()
 
 
 def main():
