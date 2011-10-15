@@ -10,26 +10,28 @@ import BaseHTTPServer
 
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_header('Content-type', 'text/html')
+        client_host, client_port = self.client_address
+        print 'Serving %s to %s:%s' % (self.path, client_host, client_port)
+        self.send_header('Content-Type', 'text/html')
         self.wfile.write('Hello World!')
         
     def do_POST(self):
-        self.send_header('Content-type', 'text/plain')
+        self.send_header('Content-Type', 'text/html')
         self.wfile.write('Hello World!')
 
 def main():
+    port = 80
     try:
-        PORT = 80
-        server = BaseHTTPServer.HTTPServer(("", PORT), Handler)
-        print 'Serving media on port %s' % PORT
-        server.serve_forever()
-    except socket.error:
-        PORT = 8888
-        server = BaseHTTPServer.HTTPServer(("", PORT), Handler)
-        print 'Serving media on port %s' % PORT
+        server = BaseHTTPServer.HTTPServer(("", port), Handler)
+    except:
+        port = 8888
+        server = BaseHTTPServer.HTTPServer(("", port), Handler)
+    print 'Serving media on port %s' % port
+    try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print '^c received, shutting down'
+        print 'shutting down'
+
 
 if __name__ == '__main__':
     main()
