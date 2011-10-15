@@ -11,7 +11,7 @@ do
 	    ;;
 	k)
 	    echo "KILLING"
-	    kill $(ps aux | grep '[d]aemonStart.py | awk '{print $2}')
+	    kill $(ps aux | grep '[d]aemonStart.py' | awk '{print $2}')
 	    exit
 	    ;;
 	?)
