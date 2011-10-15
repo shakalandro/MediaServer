@@ -13,11 +13,14 @@ import subprocess
 import socket
 import SocketServer
 import BaseHTTPServer
+import CGIHTTPServer
 import tempfile
+import threading
 import re
 from django import template
 from django.conf import settings
 from logging.handlers import SocketHandler
+from process_pile import fetch_process
 settings.configure()
 
 
@@ -49,7 +52,6 @@ class VLCProcess(subprocess.Popen):
         self.outstr = tempfile.mkstemp()[0]
         super(VLCProcess, self).__init__(*args, stdout=self.outstr, stderr=self.outstr,
                                          stdin=self.instr)
-        #super(VLCProcess, self).__init__(*args)
     
     def get_out(self):
         return self.outstr.read()
@@ -110,20 +112,17 @@ class VLCProcess(subprocess.Popen):
 
 
 processes = {}
-def fetch_process(client, form):
+def run(self, client, form):
     vlc = None
-    if client in processes:
+    if client in self.processes:
         print 'Old Process Found'
-        vlc = processes[client]
+        vlc = self.processes[client]
         vlc.terminate()
         vlc.kill()
         VLCProcess.FreePort()
-    
-    #vlc = VLCProcess.Make('-vvv -I dummy /Users/shakalandro/Movies/Rango.m4v --sout "#standard{access=http,mux=ps,dst=10.0.7.112:3000}"')
     vlc = VLCProcess.Make('/Users/shakalandro/Movies', form)
-    processes[client] = vlc
-    return VLCProcess.port_in_use
-   
+    self.processes[client] = vlc
+    return vlc, VLCProcess.port_in_use   
  
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(self):
@@ -144,29 +143,23 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         data = {}
         for field in form.keys():
             data[field] = form[field].value
-        port = fetch_process(self.client_address, data)
+
+        vlc, port = fetch_process(self.client_address, data)
         self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
+        self.send_header('Content-Type', 'text/plain')
         self.end_headers()
         self.wfile.write(port.num)
         self.wfile.flush()
-
-class MyServer(BaseHTTPServer.HTTPServer):
-    def finish_request(self, a, b):
-        print 'start'
-        BaseHTTPServer.HTTPServer.finish_request(self, a, b)
-        print 'done'
-        
+        self.server.server_close()
 
 
-server = None
 def main():
     port = 80
     try:
-        server = MyServer(("", port), Handler)
+        server = BaseHTTPServer.HTTPServer(("", port), Handler)
     except socket.error:
         port = 8888
-        server = MyServer(("", port), Handler)
+        server = BaseHTTPServer.HTTPServer(("", port), Handler)
     print 'Serving media on port %s' % port
     try:
         server.serve_forever()

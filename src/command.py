@@ -16,10 +16,10 @@ def recieve(data):
         offset =  handle_offset(data['offset'])
     if 'quality' in data:
         quality = handle_quality(data['quality'])
-    #transcode = "#transcode{vcodec=" + vcodec + ",vb=" + quality + "}"
+    transcode = "#transcode{vb=" + quality + "}"
     standard = "#standard{mux=" + mux + ",dst=" + ip + ":" + port + ",access=http}"
     file_name = os.path.join('/Users/shakalandro/Movies/', data['video'])
-    return "vlc -vvv \"" + file_name + "\" -I rc " + offset + "--sout \"" + standard + "\"" 
+    return "vlc -vvv \"" + file_name + "\" -I dummy " + offset + "--sout \"" + standard + "\"" 
 
 def handle_offset(offset):
     return "--start-time " + offset + " "

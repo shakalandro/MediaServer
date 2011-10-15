@@ -41,8 +41,8 @@ fi
 
 # Start the streaming server
 if [ "$show" = "t" ] ; then
-	python src/server.py
+	python2.7 src/server.py
 else
-	python src/daemonStart.py &
+	python2.7 src/daemonStart.py &
 fi
 exit
