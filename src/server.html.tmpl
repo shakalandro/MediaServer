@@ -14,17 +14,14 @@
             'quality': $('#quality').val()
           },
           success: function(data) {
-            console.log('http://10.0.7.112:' + data);
+            vlc.playlist.stop();
+            setTimeout(function() {
+              if (vlc.playlist.items.count <= 0)
+                vlc.playlist.add('http://10.0.7.112:' + port);
+              vlc.playlist.play();
+            }, 5000)
           }
         });
-        vlc.playlist.stop();
-        setTimeout(function() {
-          console.log('playing');
-          if (vlc.playlist.items.count <= 0)
-            vlc.playlist.add('http://10.0.7.112:33433');
-          vlc.playlist.play();
-        }, 5000)
-        
       }
   
       $(document).ready(function() {

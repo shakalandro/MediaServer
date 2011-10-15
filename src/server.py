@@ -41,10 +41,12 @@ class PortBind(object):
     def __init__(self, num):
         self.num = str(num)
         self.used = False
+    def __str__(self):
+        return '%s:%s' % (self.num, self.used)
 
 
 class VLCProcess(subprocess.Popen):
-    USED_PORTS = map(lambda x: PortBind(x), range(33433, 33433 + 1000))
+    USED_PORTS = map(lambda x: PortBind(x), range(33433, 33433 + 10))
     port_in_use = None
 
     def __init__(self, *args):
@@ -99,7 +101,7 @@ class VLCProcess(subprocess.Popen):
         offset = "--start-time " + data['offset'] if 'offset' in data else ''
         quality = data['quality'] if 'quality' in data else None
         vcodec = codecs[extension] if extension in codecs else 'mp4v'
-        port = VLCProcess.AllocatePort().num
+        port = data['port']
         mux = 'ts'
         ip = socket.gethostbyname_ex(socket.gethostname())[2][0]
         
@@ -110,19 +112,28 @@ class VLCProcess(subprocess.Popen):
             sout = transcode + ':' + standard
         return ['-vvv', '%s' % file_name, '-I', 'dummy', '--sout', '#' + sout]
 
-
 processes = {}
-def run(self, client, form):
-    vlc = None
-    if client in self.processes:
-        print 'Old Process Found'
-        vlc = self.processes[client]
-        vlc.terminate()
-        vlc.kill()
-        VLCProcess.FreePort()
-    vlc = VLCProcess.Make('/Users/shakalandro/Movies', form)
-    self.processes[client] = vlc
-    return vlc, VLCProcess.port_in_use
+class VLCThread(threading.Thread):
+    def __init__(self, client, form):
+        super(VLCThread, self).__init__()
+        self.client = client
+        self.form = form
+        if self.client in processes:
+            print 'Old Process Found'
+            vlc = processes[self.client]
+            vlc.terminate()
+            vlc.kill()
+            VLCProcess.FreePort()
+        self.port_num = VLCProcess.AllocatePort().num
+        self.form['port'] = self.port_num
+        
+    def GetPort(self):
+        return self.port_num
+        
+    def run(self):
+        vlc = VLCProcess.Make('/Users/shakalandro/Movies', self.form)
+        processes[self.client] = vlc
+
  
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(self):
@@ -131,7 +142,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(get_index('/Users/walker7734/Movies'))
+        self.wfile.write(get_index('/Users/shakalandro/Movies'))
         
     def do_POST(self):
         form = cgi.FieldStorage(
@@ -144,13 +155,13 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         for field in form.keys():
             data[field] = form[field].value
 
-        vlc, port = fetch_process(self.client_address, data)
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
         self.end_headers()
-        self.wfile.write(port.num)
+        th = VLCThread(self.client_address, data)
+        self.wfile.write(th.GetPort())
+        th.start()
         self.wfile.flush()
-        self.server.server_close()
 
 
 def main():

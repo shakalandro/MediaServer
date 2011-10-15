@@ -10,6 +10,7 @@ import subprocess
 import unittest
 import server
 import httplib
+from server import VLCThread
 
 
 class ServerTest(unittest.TestCase):
@@ -25,6 +26,20 @@ class ServerTest(unittest.TestCase):
         connection = httplib.HTTPConnection('localhost:8888')
         connection.request('GET', '/')
         self.assertTrue(connection.getresponse().read())
+    
+    def testMultiUser(self):
+        t1 = server.VLCThread(('a', 1), {'video':'The Tourist.mkv'})
+        t1.run()
+        t2 = server.VLCThread(('a', 1), {'video':'The Tourist.mkv'})
+        t2.run()
+        self.assertEqual(t1.GetPort(), t2.GetPort())
+        
+    def testMultiUserClash(self):
+        t1 = server.VLCThread(('a', 1), {'video':'The Tourist.mkv'})
+        t1.run()
+        t2 = server.VLCThread(('a', 2), {'video':'The Tourist.mkv'})
+        t2.run()
+        self.assertNotEqual(t1.GetPort(), t2.GetPort())
 
 if __name__ == "__main__":
     unittest.main()

@@ -22,7 +22,7 @@ do
 done
 
 # Ensure that VLC is installed
-if command -v vlc > /dev/null ; then
+if command -v vim > /dev/null ; then
 	echo "VLC is installed."
 else
 	echo "Please install VLC."
@@ -41,8 +41,8 @@ fi
 
 # Start the streaming server
 if [ "$show" = "t" ] ; then
-	python2.7 src/server.py
+	python src/server.py
 else
-	python2.7 src/daemonStart.py &
+	python src/daemonStart.py &
 fi
 exit
