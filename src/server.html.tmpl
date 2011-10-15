@@ -182,6 +182,11 @@
       #volume_control{
 		width:48.8%;
       }
+      #title {
+          text-align:center;
+      color: white;
+      font-size: 58;
+      }
       .ui-slider-horizontal .ui-state-default {
       	margin-top:3px;
       	margin-left:-2px;
@@ -192,8 +197,10 @@
  </head>
  <body>
     <div id="outer_border">
+      <h1 id="title">QuickServer</h1>
 	  	<div id="content">
 	  	    <div id="selections">
+		      Video:
 	  		    <select id="video" class='media'>
 	  		      <option>--none--</option>
 	  		      {% for item in Movies %}
@@ -208,6 +215,7 @@
 	  		      {% endfor %}
 	  		    </select>
 	  		    -->
+			    Quality:
 	  		    <select id="quality" class='media'>
 	  		    	<option value='2048'>High</option>
 	  		    	<option value='1024'>Medium</option>
