@@ -4,9 +4,34 @@
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="http://fgnass.github.com/spin.js/spin.min.js"></script>
     <script type="text/javascript">
         var serverIP;
+        var spinner;
     
+ 		function showSpinner(){
+     		var opts = {
+     			lines: 12,
+     			length: 21,
+     			width: 10,
+     			color: '#fff',
+     			radius: 30,
+     			trail: 52,
+     			speed: 1.0,
+     			shadow: false
+     		};
+      	
+	      	var target = document.getElementById("spinner");
+	      	spinner = new Spinner(opts).spin(target);
+	      	$("#spinner").show();
+     	 }    	
+     	 
+     	 function hideSpinner(){
+			spinner.stop();
+			$("#spinner").hide();
+     	 }
+    	
+    	
         function sendRequest() {
             $.ajax({
                 url: "/stream:8888",
@@ -18,7 +43,9 @@
                 success: function(data) {
                     vlc.playlist.stop();
                     vlc.playlist.clear();
+                    showSpinner();
                     setTimeout(function() {
+                    	hideSpinner();
                         console.log('playing http://' + serverIP + ':' + data);
                         if (vlc.playlist.items.count <= 0) {
                             vlc.playlist.add('http://' + serverIP + ':' + data);
@@ -113,6 +140,7 @@
       }
       #outer_border{
         width:1210;
+        height:100%;
         background-color:rgb(125,125,125);
       }
       body{
@@ -193,6 +221,15 @@
       	width:12px;
       	height:12px;
       }
+      #spinner{
+      	display:hidden;
+      	width:200px;
+      	height:200px;
+      	background-color:black;
+      	position:absolute;
+      	left:43%;
+      	top:50%;	
+      }
     </style>
  </head>
  <body>
@@ -224,6 +261,8 @@
 	  		    </select>
   			</div>
 		  	<div id="player">
+		  		<div id="spinner">
+		  		</div>
 		    	<embed id='vlc' type="application/x-vlc-plugin" name="video2"
               autoplay="no" loop="no" hidden="yes" width=640 height=480 />
 		      <div id="slider"></div>
