@@ -9,8 +9,11 @@ import sys
 import subprocess
 import socket
 import BaseHTTPServer
-import django.template
-
+try:
+    import django.template
+except ImportError:
+    sys.path.append(os.path.join(os.getcwd(),'..'))
+    import django.template
 
 def get_index(path='../..'):
     return os.listdir(path)
@@ -20,7 +23,9 @@ class VLCProcess(subprocess.Popen):
     
     @staticmethod
     def Make(self, args_list):
-        return VLCProcess(list('vlc', args_list))
+        command = VLCProcess.VlcCommand()
+        print command
+        return VLCProcess(list(command, *args_list))
 
     @staticmethod
     def VlcCommand():
@@ -39,19 +44,9 @@ class VLCProcess(subprocess.Popen):
 
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     processes = {}
-    def do_GET(self):
-        client_host, client_port = self.client_address
-        print 'Serving %s to %s:%s' % (self.path, client_host, client_port)
-        self.send_response(200)
-        self.send_header('Content-Type', 'text/html')
-        self.end_headers()
-        self.wfile.write(get_index())
-        
-    def do_POST(self):
+    
+    def fetch_process(self):
         vlc = None
-        self.send_response(200)
-        self.send_header('Content-Type', 'text/plain')
-        self.end_headers()
         if self.client_address in self.processes:
             vlc = self.processes[self.client_address]
             self.wfile.write('Old process found: 8888')
@@ -59,7 +54,23 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
             vlc[self.client_address] = VLCProcess(['-I', 'rc', '../test/data/2.avi', '-sout',
                                                    '#standard{access=http,mux=ts,dst=localhost:8888}'])
             self.wfile.write('New process created: 8888')
+        return 
+    
+    def do_GET(self):
+        client_host, client_port = self.client_address
+        print 'Serving %s to %s:%s' % (self.path, client_host, client_port)
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html')
+        self.end_headers()
+        self.wfile.write('Hello')
+        vlc = self.fetch_process()
         
+    def do_POST(self):
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/plain')
+        self.end_headers()
+        vlc = self.fetch_process()
+    
 
 def main():
     port = 80

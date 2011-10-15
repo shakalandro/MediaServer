@@ -4,11 +4,14 @@ Created on Oct 14, 2011
 @author: shakalandro
 '''
 
+import sys
 import subprocess
 import unittest
 import server
 import httplib
 
+
+print sys.path
 
 class ServerTest(unittest.TestCase):
     server_inst = subprocess.Popen('python ../server.py', shell=True)
