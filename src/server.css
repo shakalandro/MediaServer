@@ -1,0 +1,38 @@
+#content, #outer_border{
+	margin-left:auto;
+	margin-right:auto;
+	height:100%;
+}
+	
+#outer_border{
+	width:1210;
+	background-color:white;
+}
+
+body{
+	margin:0px;
+	background-color:purple;
+}
+
+#controls, #player, #selections{
+	text-align:center;
+}
+
+#content{
+	width: 1200;
+	background-color:gray;
+}
+
+#controls li {
+	list-style-type: none;
+	display: inline;
+}
+
+#slider {
+	margin: 10px;
+}
+       
+#player{
+	padding-top:50px;
+	text-align:center;
+}
