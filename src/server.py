@@ -22,7 +22,7 @@ settings.configure()
 def get_index(path='..', template_path='src/server.html.tmpl'):
     movie_files = ['avi', 'mpg', 'wmv', 'mp4', 'mov', 'mkv', 'flv', 'rm', 'dv']
     audio_files = ['mp3', 'wav']
-    nocrawl = open('nocrawl')
+    nocrawl = open('src/nocrawl')
     omitRE = nocrawl.read().strip()
     t = template.Template(open(template_path, 'r').read())
     c = template.Context({
@@ -137,7 +137,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
                 fp=self.rfile, 
                 headers=self.headers,
                 environ={'REQUEST_METHOD':'POST',
-                        'CONTENT_TYPE':self.headers['Content-Type'],
+                        'CONTENT_TYPE':self.headers['Content-Type']
                         })
         data = {}
         for field in form.keys():
@@ -148,7 +148,6 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(port)
         self.wfile.flush()
-        self.close_connection = 1
     
     def handle_one_request(self):
         s = BaseHTTPServer.BaseHTTPRequestHandler.handle_one_request(self)
