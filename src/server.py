@@ -13,6 +13,7 @@ import subprocess
 import socket
 import BaseHTTPServer
 import tempfile
+import re
 from django import template
 from django.conf import settings
 settings.configure()
@@ -21,10 +22,12 @@ settings.configure()
 def get_index(path='..', template_path='src/server.html.tmpl'):
     movie_files = ['avi', 'mpg', 'wmv', 'mp4', 'mov', 'mkv', 'flv', 'rm', 'dv']
     audio_files = ['mp3', 'wav']
+    nocrawl = open('nocrawl')
+    omitRE = nocrawl.read().strip()
     t = template.Template(open(template_path, 'r').read())
     c = template.Context({
-        'Movies': filter(lambda x: os.path.splitext(x)[1][1:] in movie_files, os.listdir(path)),
-        'Music': filter(lambda x: os.path.splitext(x)[1][1:] in audio_files, os.listdir(path))
+        'Movies': filter(lambda x: os.path.splitext(x)[1][1:] in movie_files and not re.search(omitRE, x), os.listdir(path)),
+        'Music': filter(lambda x: os.path.splitext(x)[1][1:] in audio_files and not re.search(omitRE, x), os.listdir(path))
     })
     return t.render(c)
 
