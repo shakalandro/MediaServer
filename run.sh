@@ -10,8 +10,15 @@ do
 	    show="t"
 	    ;;
 	k)
-	    echo "KILLING"
-	    kill $(ps aux | grep '[d]aemonStart.py' | awk '{print $2}')
+	    echo "Killing the process"
+	    py=`ps aux | grep '[d]aemonStart.py' | wc -l`
+	    if [ $py -gt 0 ] ; then
+	        ps aux | grep '[d]aemonStart.py' | awk '{print $2}' | xargs kill -9
+	    fi
+	    vlc=`ps aux | grep '[V]LC' | wc -l`
+	    if [ $vlc -gt 0 ] ; then
+	        ps aux | grep '[V]LC' | awk '{print $2}' | xargs kill -9
+	    fi
 	    exit
 	    ;;
 	?)
