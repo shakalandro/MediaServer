@@ -1,0 +1,142 @@
+<html>
+  <head>
+    <title>Brian's Olde Time Saloon!</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"/></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
+    <script type=text/javascript>
+      function sendRequest() {
+        $.ajax({
+          url: "/stream:8888",
+          type: "POST",
+          data: {
+            'video': $('#video').val(),
+            'quality': $('#quality').val()
+          },
+          success: function(data) {
+            console.log('http://10.0.7.112:' + data);
+          }
+        });
+        setTimeout(function() {
+          console.log('playing');
+          vlc.playlist.add('http://10.0.7.112:3000');
+          vlc.playlist.play();
+        }, 5000)
+        
+      }
+      $(document).ready(function() {
+        var vlc = $('#vlc')[0];
+      
+        $('#playpause').toggle(function() {
+          vlc.playlist.togglePause();
+          $('#playpause').text("Play");  
+        }, function() {
+          vlc.playlist.togglePause();
+          $('#playpause').text("Pause");
+        });
+        $('#prev').click(function() {
+          vlc.playlist.prev();
+        });
+        $('#next').click(function() {
+          vlc.playlist.next();
+        });
+        $('#fullscreen').click(function() {
+          vlc.video.toggleFullscreen();
+        });
+        $('#slider').slider();
+        $('#video').change(sendRequest);
+      });
+    </script>
+    <style type='text/css'>
+      #content, #outer_border{
+        margin-left:auto;
+        margin-right:auto;
+        height:100%;
+      }
+      #outer_border{
+        width:1210;
+        background-color:rgb(125,125,125);
+      }
+      body{
+        margin:0px;
+        font-family: "Lucida Grande", Helvetica;
+        background-image:url("outer_background.png");
+      }
+      #controls, #selections{
+        text-align:center;
+        width:100%;
+      }
+      #content{
+        width: 1200;
+        background-color:rgb(80,80,80);
+      }
+      #controls li {
+        list-style-type: none;
+        display: inline;
+      }
+      #slider {
+        width:99.75%;
+        border-style:solid;
+        border-width:1px;
+        border-color:black;
+        height:5px;
+        background-color:white;
+      }
+      #player{
+        padding-top:50px;
+        width:640px;
+        margin-left:auto;
+        margin-right:auto;
+      }
+      #play, #playpause, #next, #fullscreen {
+        float:left;
+        text-align:center;
+        width:23.9%;
+        height:20px;
+        background-color:white;
+        border-style:solid;
+        border-color:black;
+        border-width:1px; 
+        padding:3px;
+      }
+      #selections {
+        clear: both;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="outer_border">
+	  	<div id="content">
+		  	<div id="player">
+		    	<embed id='vlc' type="application/x-vlc-plugin" name="video2"
+              autoplay="no" loop="no" hidden="yes" width=640 height=480
+              target="http://10.0.7.112:3000" />
+		      <div id="slider"></div>
+		      <div id="controls"></div>
+		      <div id="play">Play</div>
+		      <div id="playpause">Pause</div>
+		      <div id="next">Next</div>
+		      <div id="fullscreen">Fullscreen</div>
+  			</div>
+  	    <div id="selections">
+  		    <select id="video" class='media'>
+  		      <option>--none--</option>
+  		      {% for item in Movies %}
+  		      <option>{{item}}</option>
+  		      {% endfor %}
+  		    </select>
+  		    <select id="music" class='media'>
+  		      <option>--none--</option>
+  		      {% for item in Music %}
+  		      <option>{{item}}</option>
+  		      {% endfor %}
+  		    </select>
+  		    <select id="quality" class='media'>
+  		    	<option>High</option>
+  		    	<option>Medium</option>
+  		    	<option>Low</option>
+  		    </select>
+  		</div>
+		</div>
+	</div>
+    </body>
+</html>

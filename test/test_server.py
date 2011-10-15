@@ -19,7 +19,7 @@ class ServerTest(unittest.TestCase):
         self.server_inst.terminate()
     
     def testGetIndex(self):
-        self.assertTrue(server.get_index('./data', '../src/server.html'))
+        self.assertTrue(server.get_index('./data', '../src/server.html.tmpl'))
 
     def testConnect(self):
         connection = httplib.HTTPConnection('localhost:8888')

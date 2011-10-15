@@ -4,8 +4,11 @@ Created on Oct 14, 2011
 @author: shakalandro
 '''
 
+import cgi
 import os
 import sys
+import json
+import command
 import subprocess
 import socket
 import BaseHTTPServer
@@ -16,7 +19,7 @@ from django.conf import settings
 settings.configure()
 
 
-def get_index(path='..', template_path='src/server.html'):
+def get_index(path='..', template_path='src/server.html.tmpl'):
     movie_files = ['avi', 'mpg', 'wmv', 'mp4', 'mov', 'mkv', 'flv', 'rm', 'dv']
     audio_files = ['mp3', 'wav']
     t = template.Template(open(template_path, 'r').read())
@@ -29,10 +32,11 @@ def get_index(path='..', template_path='src/server.html'):
 
 class VLCProcess(subprocess.Popen):
     def __init__(self, *args):
-        self.instr = tempfile.mkstemp()[0]
-        self.outstr = tempfile.mkstemp()[0]
-        super(VLCProcess, self).__init__(*args, stdout=self.outstr, stderr=self.outstr,
-                                         stdin=self.instr)
+        #self.instr = tempfile.mkstemp()[0]
+        #self.outstr = tempfile.mkstemp()[0]
+        #super(VLCProcess, self).__init__(*args, stdout=self.outstr, stderr=self.outstr,
+        #                                 stdin=self.instr)
+        super(VLCProcess, self).__init__(*args, shell=True)
     
     def get_out(self):
         return self.outstr.read()
@@ -43,8 +47,7 @@ class VLCProcess(subprocess.Popen):
     @staticmethod
     def Make(args_list):
         command = VLCProcess.VlcCommand()
-        print list([command]) + args_list
-        return VLCProcess(list([command]) + args_list)
+        return VLCProcess('%s %s' % (command, args_list))
 
     @staticmethod
     def VlcCommand():
@@ -61,34 +64,43 @@ class VLCProcess(subprocess.Popen):
             return 'vlc'
 
 
-class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
-    processes = {}
-    def fetch_process(self):
-        vlc = None
-        if self.client_address in self.processes:
-            vlc = self.processes[self.client_address]
-            self.wfile.write('Old process found: 8888')
-        else:
-            vlc = VLCProcess.Make(['-I', 'rc', 'test/data/2.avi', '--sout',
-                                   '#standard{access=http,mux=avi,dst=localhost:8888}'])
-            self.processes[self.client_address] = vlc
-            self.wfile.write('New process created: 8888')
-        return
+processes = {}
+def fetch_process(client, form):
+    vlc = None
+    if client in processes:
+        vlc = processes[client]
+        vlc.terminate()
+    command.recieve(form)
     
+    vlc = VLCProcess.Make('-vvv -I dummy /Users/shakalandro/Movies/Rango.m4v --sout "#standard{access=http,mux=ps,dst=10.0.7.112:3000}"')
+    processes[client] = vlc
+    print 'New vlc instance created'
+   
+ 
+class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(self):
         client_host, client_port = self.client_address
         print 'Serving %s to %s:%s' % (self.path, client_host, client_port)
         self.send_response(200)
-        self.send_header('Content-Type', 'text/html')
+        self.send_header('Content-type', 'text/html')
         self.end_headers()
         self.wfile.write(get_index('/Users/shakalandro/Movies'))
         
     def do_POST(self):
+        form = cgi.FieldStorage(
+                fp=self.rfile, 
+                headers=self.headers,
+                environ={'REQUEST_METHOD':'POST',
+                        'CONTENT_TYPE':self.headers['Content-Type'],
+                        })
+        data = {}
+        for field in form.keys():
+            data[field] = form[field].value
+        fetch_process(self.client_address, data)
         self.send_response(200)
-        self.send_header('Content-Type', 'text/plain')
+        self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        vlc = self.fetch_process()
-    
+
 
 def main():
     port = 80

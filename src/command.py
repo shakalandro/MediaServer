@@ -15,9 +15,9 @@ def recieve(data):
         offset =  handle_offset(data['offset'])
     if 'quality' in data:
         quality = handle_quality(data['quality'])
-    transcode = "#transcode{vcodec=" + vcodec + ",vb=" + quality + "}"
+    #transcode = "#transcode{vcodec=" + vcodec + ",vb=" + quality + "}"
     standard = "#standard{mux=" + mux + ",dst=" + ip + ":" + port + ",access=http}"
-    return "vlc -vvv " + data['video'] + " -I rc " + offset + "--sout \'" + standard + "\'" 
+    return "vlc -vvv " + data['video'] + " -I rc " + offset + "--sout \"" + standard + "\"" 
 
 def handle_offset(offset):
     return "--start-time " + offset + " "
@@ -29,6 +29,3 @@ def handle_quality(quality):
         return "512"
     if quality is 'high':
         return "2048"
-    
-tel = {'video' : 'SharkTales.ogv'}
-print(recieve(tel))
