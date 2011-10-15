@@ -120,7 +120,7 @@ def fetch_process(client, form):
         VLCProcess.FreePort()
     
     #vlc = VLCProcess.Make('-vvv -I dummy /Users/shakalandro/Movies/Rango.m4v --sout "#standard{access=http,mux=ps,dst=10.0.7.112:3000}"')
-    vlc = VLCProcess.Make('/Users/shakalandro/Movies', form)
+    vlc = VLCProcess.Make('/Users/walker7734/Movies', form)
     processes[client] = vlc
     return VLCProcess.port_in_use
    
@@ -132,7 +132,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(get_index('/Users/shakalandro/Movies'))
+        self.wfile.write(get_index('/Users/walker7734/Movies'))
         
     def do_POST(self):
         form = cgi.FieldStorage(
