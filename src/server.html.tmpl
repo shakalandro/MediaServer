@@ -1,82 +1,109 @@
 <html>
   <head>
-    <title>MediaServer</title>
+    <title>QuickServe</title>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.min.js"></script>
     <script type="text/javascript">
-      function sendRequest() {
-        $.ajax({
-          url: "/stream:8888",
-          type: "POST",
-          data: {
-            'video': $('#video').val(),
-            'quality': $('#quality').val()
-          },
-          success: function(data) {
-            vlc.playlist.stop();
-            setTimeout(function() {
-              if (vlc.playlist.items.count <= 0)
-                vlc.playlist.add('http://10.0.7.112:' + port);
-              vlc.playlist.play();
-            }, 5000)
-          }
+        var serverIP;
+    
+        function sendRequest() {
+            $.ajax({
+                url: "/stream:8888",
+                type: "POST",
+                data: {
+                    'video': $('#video').val(),
+                    'quality': $('#quality').val()
+                },
+                success: function(data) {
+                    vlc.playlist.stop();
+                    vlc.playlist.clear();
+                    setTimeout(function() {
+                        console.log('playing http://' + serverIP + ':' + data);
+                        if (vlc.playlist.items.count <= 0) {
+                            vlc.playlist.add('http://' + serverIP + ':' + data);
+                            vlc.playlist.play();
+                        }
+                    }, 5000);
+                }
+            });
+        }
+        
+        function getIP() {
+            var url, matched;
+            var url = window.location;
+            re = /[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}/;
+            matched = re.exec(url);
+            serverIP = matched[0];
+        }
+        
+        
+        $(document).ready(function() {
+            getIP();
+            var vlc = $('#vlc')[0];
+        
+            $('#playpause').toggle(function() {
+                vlc.playlist.togglePause();
+                $('#playpause').text("Play");  
+            }, function() {
+                vlc.playlist.togglePause();
+                $('#playpause').text("Pause");
+            });
+            $('#prev').click(function() {
+                vlc.playlist.prev();
+            });
+            $('#next').click(function() {
+                vlc.playlist.next();
+            });
+            $('#fullscreen').click(function() {
+                vlc.video.toggleFullscreen();
+            });
+            $('#ff').click(function(){
+                if($('#ff').text() === "Resume"){
+                    $('#ff').text("FF");
+                    vlc.input.rate = 1.0;
+                }else{
+                    $('#ff').text("Resume");
+                    vlc.input.rate = 2.0;
+                }
+            });
+            $('#rw').click(function(){
+                if($('#rw').text() === "Resume"){
+                    $('#rw').text("RW");
+                    vlc.input.rate = 1.0;
+                }else{
+                    $('#rw').text("Resume");
+                    vlc.input.rate = -2.0;
+                }
+            });
+            $('#slider').slider();
+            $('#slider').slider("option","min", 0);
+            $('#slider').slider("option","max", 1.0);
+            $('#slider').slider("option","step", .01);
+            $('#slider').slider("option","value", 0);
+            $('#slider').slider({
+                slide: function(event, ui){
+                    var length = vlc.input.length;
+                    var seek = length * ui.value;
+                    vlc.input.time = vlc.input.time + (seek - vlc.input.time);	
+                }
+            });
+            $('#volume').slider();
+            $('#volume').slider("option","min",0);
+            $('#volume').slider("option","max",100);
+            $('#volume').slider("option","step", 1);
+            $('#volume').slider("option","value", 50);
+            vlc.audio.volume = 50;
+            $('#volume').slider({
+                slide: function(event,ui){
+                vlc.audio.volume = parseInt(ui.value);
+                }
+            });
+            $('#mute').click(function(){
+                vlc.audio.toggleMute();
+            });
+            $('#video').change(sendRequest);
         });
-      }
-  
-      $(document).ready(function() {
-        var vlc = $('#vlc')[0];
-      
-        $('#playpause').toggle(function() {
-          vlc.playlist.togglePause();
-        $('#playpause').text("Play");  
-        }, function() {
-          vlc.playlist.togglePause();
-          $('#playpause').text("Pause");
-        });
-        $('#prev').click(function() {
-          vlc.playlist.prev();
-        });
-        $('#next').click(function() {
-          vlc.playlist.next();
-        });
-        $('#fullscreen').click(function() {
-          vlc.video.toggleFullscreen();
-        });
-        $('#ff').click(function(){
-        	vlc.input.rate = 2.0;
-        });
-        $('#rw').click(function(){
-        	vlc.input.rate = -2.0;
-        });
-        $('#slider').slider();
-        $('#slider').slider("option","min", 0);
-        $('#slider').slider("option","max", 1.0);
-        $('#slider').slider("option","step", .01);
-        $('#slider').slider("option","value", 0);
-        $('#slider').slider({
-        	slide: function(event, ui){
-        		var length = vlc.input.length;
-        		var seek = length * ui.value;
-        		vlc.input.time = vlc.input.time + (seek - vlc.input.time);	
-        	}
-        });
-        $('#volume').slider();
-        $('#volume').slider("option","min",0);
-        $('#volume').slider("option","max",100);
-        $('#volume').slider("option","step", 1);
-        $('#volume').slider("option","value", 50);
-        vlc.audio.volume = 50;
-        $('#volume').slider({
-        	slide: function(event,ui){
-        		vlc.audio.volume = parseInt(ui.value);
-        	}
-        });
-        $('#mute').click(function(){
-        	vlc.audio.toggleMute();
-        });
-        $('#video').change(sendRequest);
-      });
     </script>
     <style type='text/css'>
       #content, #outer_border{
@@ -155,6 +182,11 @@
       #volume_control{
 		width:48.8%;
       }
+      #title {
+          text-align:center;
+      color: white;
+      font-size: 58;
+      }
       .ui-slider-horizontal .ui-state-default {
       	margin-top:3px;
       	margin-left:-2px;
@@ -165,20 +197,25 @@
  </head>
  <body>
     <div id="outer_border">
+      <h1 id="title">QuickServer</h1>
 	  	<div id="content">
 	  	    <div id="selections">
+		      Video:
 	  		    <select id="video" class='media'>
 	  		      <option>--none--</option>
 	  		      {% for item in Movies %}
 	  		      <option>{{item}}</option>
 	  		      {% endfor %}
 	  		    </select>
+	  		    <!--
 	  		    <select id="music" class='media'>
 	  		      <option>--none--</option>
 	  		      {% for item in Music %}
 	  		      <option>{{item}}</option>
 	  		      {% endfor %}
 	  		    </select>
+	  		    -->
+			    Quality:
 	  		    <select id="quality" class='media'>
 	  		    	<option value='2048'>High</option>
 	  		    	<option value='1024'>Medium</option>
