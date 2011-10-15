@@ -1,5 +1,26 @@
 #!/bin/bash
 
+show=
+
+while getopts "sk" flag
+do
+    case $flag in
+    	s)
+	    echo "Running in foreground"
+	    show="t"
+	    ;;
+	k)
+	    echo "KILLING"
+	    kill $(ps aux | grep '[d]aemonStart.py | awk '{print $2}')
+	    exit
+	    ;;
+	?)
+	    echo "UNKNOWN"
+	    exit
+	    ;;
+    esac
+done
+
 # Ensure that VLC is installed
 if command -v vim > /dev/null ; then
 	echo "VLC is installed."
@@ -19,5 +40,9 @@ else
 fi
 
 # Start the streaming server
-python src/daemonStart.py &
+if [ "$show" = "t" ] ; then
+	python src/server.py
+else
+	python src/daemonStart.py &
+fi
 exit
