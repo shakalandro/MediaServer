@@ -128,36 +128,15 @@
     <div id="outer_border">
 	  	<div id="content">
 		  	<div id="player">
-			    <embed id='vlc' type="application/x-vlc-plugin" name="video2"
-	              	autoplay="no" loop="no" hidden="yes" width=640 height=480
-	              	target="http://10.0.7.112:3000" />
-			    <div id="slider"></div>
-		    	<div id="playpause">Pause</div>
-		 		<div id="next">Next</div>
-	      		<div id="fullscreen">Fullscreen</div>
-	      		<div id="placeholder">Placeholder</div>
-  			</div> 
-  				Volume:
-  	   			<div id="volume">
-  				</div>
-  	   		<div id="selections">
-	  		    <select id="video" class='media'>
-	  		      <option>--none--</option>
-	  		      {% for item in Movies %}
-	  		      <option>{{item}}</option>
-	  		      {% endfor %}
-	  		    </select>
-	  		    <select id="music" class='media'>
-	  		      <option>--none--</option>
-	  		      {% for item in Music %}
-	  		      <option>{{item}}</option>
-	  		      {% endfor %}
-	  		    </select>
-	  		    <select id="quality" class='media'>
-	  		    	<option>High</option>
-	  		    	<option>Medium</option>
-	  		    	<option>Low</option>
-	  		    </select>
+		    	<embed id='vlc' type="application/x-vlc-plugin" name="video2"
+              autoplay="no" loop="no" hidden="yes" width=640 height=480 />
+		      <div id="slider"></div>
+		      <div id="controls"></div>
+		      <div id="play">Play</div>
+		      <div id="playpause">Pause</div>
+		      <div id="next">Next</div>
+		      <div id="fullscreen">Fullscreen</div>
+		      Volume: <div id="volume">
   			</div>
   	    <div id="selections">
   		    <select id="video" class='media'>
