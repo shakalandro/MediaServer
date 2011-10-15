@@ -12,7 +12,8 @@ import BaseHTTPServer
 try:
     import django.template
 except ImportError:
-    sys.path.append(os.path.join(os.getcwd(),'..'))
+    print os.path.join(os.getcwd())
+    sys.path.append(os.path.join(os.getcwd(),'django'))
     import django.template
 
 def get_index(path='../..'):
