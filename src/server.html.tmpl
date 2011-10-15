@@ -53,7 +53,7 @@
         $('#volume').slider("option","step", 1);
         $('#volume').slider({
         	slide: function(event,ui){
-        		vlc.audio.volume(parseInt(ui.value));
+        		vlc.audio.volume = parseInt(ui.value);
         	}
         });
         $('#video').change(sendRequest);
@@ -132,7 +132,6 @@
               autoplay="no" loop="no" hidden="yes" width=640 height=480 />
 		      <div id="slider"></div>
 		      <div id="controls"></div>
-		      <div id="play">Play</div>
 		      <div id="playpause">Pause</div>
 		      <div id="next">Next</div>
 		      <div id="fullscreen">Fullscreen</div>
