@@ -1,10 +1,11 @@
 function sendRequest(event){
-	alert(event);
-	new Ajax.Request("command.py" ,{
-		method:post,
-		parameters:{},
+	var changed, val;
+	changed = this.id;
+	val = this.value;
+	new Ajax.Request("/" ,{
+		method:"post",
+		parameters:{changed:val},
 		onFailure: displayError
-		
 	});
 }
 

@@ -6,12 +6,12 @@
 	
 #outer_border{
 	width:1210;
-	background-color:white;
+	background-color:rgb(125,125,125);
 }
 
 body{
 	margin:0px;
-	background-color:purple;
+	background-image:url("outer_background.png");
 }
 
 #controls, #player, #selections{
@@ -20,7 +20,7 @@ body{
 
 #content{
 	width: 1200;
-	background-color:gray;
+	background-color:rgb(80,80,80);
 }
 
 #controls li {
