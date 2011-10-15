@@ -40,11 +40,11 @@ class VLCProcess(subprocess.Popen):
     port_in_use = None
 
     def __init__(self, *args):
-        #self.instr = tempfile.mkstemp()[0]
-        #self.outstr = tempfile.mkstemp()[0]
-        #super(VLCProcess, self).__init__(*args, stdout=self.outstr, stderr=self.outstr,
-        #                                 stdin=self.instr)
-        super(VLCProcess, self).__init__(*args)
+        self.instr = tempfile.mkstemp()[0]
+        self.outstr = tempfile.mkstemp()[0]
+        super(VLCProcess, self).__init__(*args, stdout=self.outstr, stderr=self.outstr,
+                                         stdin=self.instr)
+        #super(VLCProcess, self).__init__(*args)
     
     def get_out(self):
         return self.outstr.read()
@@ -145,6 +145,12 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(port)
         self.wfile.flush()
+        self.close_connection = 1
+    
+    def handle_one_request(self):
+        s = BaseHTTPServer.BaseHTTPRequestHandler.handle_one_request(self)
+        print 'hello'
+        return s
 
 
 def main():
