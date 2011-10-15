@@ -38,16 +38,15 @@
     <div id="outer_border">
 	  	<div id="content">
 		  	<div id="player">
-		    <embed id="vlc" type="application/x-vlc-plugin" pluginspage="http://www.videolan.org" version="VideoLAN.VLCPlugin.2"
+		    	<embed id="vlc" type="application/x-vlc-plugin" pluginspage="http://www.videolan.org" version="VideoLAN.VLCPlugin.2"
 		           width="640" height="480" />
-		                <div id="slider"></div>
+		      <div id="slider"></div>
+		      <div id="controls"></div>
+		      <div id="play">Play</div>
+		      <div id="playpause">Pause</div>
+		      <div id="next">Next</div>
+		      <div id="fullscreen">Fullscreen</div>
 			</div>
-		    <ul id="controls">
-		      <li><div id="play">Play</div></li>
-		      <li><button id="playpause">Pause</button></li>
-		      <li><button id="next">Next</button></li>
-		      <li><button id="fullscreen">Fullscreen</button></li>
-		    </ul>
 		    <div id="selections">
 			    <select id="video" class='media'>
 			      {% for item in Movies %}
