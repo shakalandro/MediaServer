@@ -51,10 +51,15 @@
         $('#volume').slider("option","min",0);
         $('#volume').slider("option","max",100);
         $('#volume').slider("option","step", 1);
+        $('#volume').slider("option","value", 50);
+        vlc.audio.volume = 50;
         $('#volume').slider({
         	slide: function(event,ui){
         		vlc.audio.volume = parseInt(ui.value);
         	}
+        });
+        $('#mute').click(function(){
+        	vlc.audio.toggleMute();
         });
         $('#video').change(sendRequest);
       });
@@ -100,7 +105,7 @@
         margin-left:auto;
         margin-right:auto;
       }
-      #placeholder, #playpause, #next, #fullscreen {
+      #placeholder, #playpause, #next, #fullscreen, #mute {
         float:left;
         text-align:center;
         width:23.9%;
@@ -156,6 +161,7 @@
   		    	<option value='512'>Low</option>
   		    	<option value='256'>Very Low</option>
   		    </select>
+  		    <div id="mute">Mute</div>
   		</div>
 		</div>
 	</div>
