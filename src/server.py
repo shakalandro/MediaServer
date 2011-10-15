@@ -9,12 +9,7 @@ import sys
 import subprocess
 import socket
 import BaseHTTPServer
-try:
-    import django.template
-except ImportError:
-    print os.path.join(os.getcwd())
-    sys.path.append(os.path.join(os.getcwd(),'django'))
-    import django.template
+import django.template
 
 def get_index(path='../..'):
     return os.listdir(path)
