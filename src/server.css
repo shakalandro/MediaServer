@@ -11,11 +11,13 @@
 
 body{
 	margin:0px;
+	font-family: "Lucida Grande", Helvetica;
 	background-image:url("outer_background.png");
 }
 
-#controls, #player, #selections{
+#controls, #selections{
 	text-align:center;
+	width:100%;
 }
 
 #content{
@@ -29,15 +31,29 @@ body{
 }
 
 #slider {
-	margin: 10px;
+	width:99.75%;
+	border-style:solid;
+	border-width:1px;
+	border-color:black;
+	height:5px;
+	background-color:white;
 }
        
 #player{
 	padding-top:50px;
-	text-align:center;
+	width:640px;
+	margin-left:auto;
+	margin-right:auto;
 }
 
-#play{
-	width:50px;
-	height:20px;	
+#play, #playpause, #next, #fullscreen{
+	float:left;
+	text-align:center;
+	width:23.9%;
+	height:20px;
+	background-color:white;
+	border-style:solid;
+	border-color:black;
+	border-width:1px;	
+	padding:3px;
 }
