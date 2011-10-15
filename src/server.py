@@ -4,23 +4,62 @@ Created on Oct 14, 2011
 @author: shakalandro
 '''
 
+import os
+import sys
+import subprocess
 import socket
 import BaseHTTPServer
-import index
+import django.template
+
+
+def get_index(path='../..'):
+    return os.listdir(path)
+
+
+class VLCProcess(subprocess.Popen):
+    
+    @staticmethod
+    def Make(self, args_list):
+        return VLCProcess(list('vlc', args_list))
+
+    @staticmethod
+    def VlcCommand():
+        linux = 'linux'
+        mac = 'darwin'
+        windows = 'win'
+        cygwin = 'cygwin'
+        platform = sys.platform
+        if platform.startswith(linux):
+            return 'vlc'
+        elif platform.startswith(mac):
+            return '/Applications/VLC.app/Contents/MacOS/VLC'
+        elif platform.startswith(windows) or platform.startswith(cygwin):
+            return 'vlc'
 
 
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
+    processes = {}
     def do_GET(self):
         client_host, client_port = self.client_address
         print 'Serving %s to %s:%s' % (self.path, client_host, client_port)
         self.send_response(200)
         self.send_header('Content-Type', 'text/html')
         self.end_headers()
-        self.wfile.write(index.get_index())
+        self.wfile.write(get_index())
         
     def do_POST(self):
-        self.send_header('Content-Type', 'text/html')
-        self.wfile.write('Hello World!')
+        vlc = None
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/plain')
+        self.end_headers()
+        if self.client_address in self.processes:
+            vlc = self.processes[self.client_address]
+            self.wfile.write('Old process found: 8888')
+        else:
+            vlc[self.client_address] = VLCProcess(['-I', 'rc', '../test/data/2.avi', '-sout',
+                                                   '#standard{access=http,mux=ts,dst=localhost:8888}'])
+            self.wfile.write('New process created: 8888')
+        
 
 def main():
     port = 80
