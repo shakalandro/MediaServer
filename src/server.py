@@ -11,11 +11,13 @@ import json
 import command
 import subprocess
 import socket
+import SocketServer
 import BaseHTTPServer
 import tempfile
 import re
 from django import template
 from django.conf import settings
+from logging.handlers import SocketHandler
 settings.configure()
 
 
@@ -91,7 +93,7 @@ class VLCProcess(subprocess.Popen):
     def BuildArgs(path, data):
         file_name = os.path.join(path, data['video'])
         extension = os.path.splitext(file_name)[1][1:]
-        codecs = {'mp4': 'mp4v', 'm4v': 'h263'}
+        codecs = {'mp4': 'mp4v', 'm4v': 'h263', 'avi': 'mp4v'}
         offset = "--start-time " + data['offset'] if 'offset' in data else ''
         quality = data['quality'] if 'quality' in data else None
         vcodec = codecs[extension] if extension in codecs else 'mp4v'
@@ -99,7 +101,7 @@ class VLCProcess(subprocess.Popen):
         mux = 'ts'
         ip = socket.gethostbyname_ex(socket.gethostname())[2][0]
         
-        transcode = 'transcode{vcodec=%s,vb=%s}' % (vcodec, quality)
+        transcode = 'transcode{vb=%s}' % (quality)
         standard = 'standard{mux=%s,dst=%s:%s,access=http}' % (mux, ip, port)
         sout = standard
         if quality:
@@ -146,22 +148,25 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
-        self.wfile.write(port)
+        self.wfile.write(port.num)
         self.wfile.flush()
-    
-    def handle_one_request(self):
-        s = BaseHTTPServer.BaseHTTPRequestHandler.handle_one_request(self)
-        print 'hello'
-        return s
+
+class MyServer(BaseHTTPServer.HTTPServer):
+    def finish_request(self, a, b):
+        print 'start'
+        BaseHTTPServer.HTTPServer.finish_request(self, a, b)
+        print 'done'
+        
 
 
+server = None
 def main():
     port = 80
     try:
-        server = BaseHTTPServer.HTTPServer(("", port), Handler)
+        server = MyServer(("", port), Handler)
     except socket.error:
         port = 8888
-        server = BaseHTTPServer.HTTPServer(("", port), Handler)
+        server = MyServer(("", port), Handler)
     print 'Serving media on port %s' % port
     try:
         server.serve_forever()
