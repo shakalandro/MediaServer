@@ -51,7 +51,7 @@
         $('#volume').slider("option","step", 1);
         $('#volume').slider({
         	slide: function(event,ui){
-        		vlc.audio.volume(parseInt(ui.value));
+        		vlc.audio.volume = parseInt(ui.value);
         	}
         });
         $('#video').change(sendRequest);
@@ -78,6 +78,7 @@
       }
       #content{
         width: 1200;
+        height:100%;
         background-color:rgb(80,80,80);
       }
       #controls li {
@@ -113,12 +114,8 @@
         clear: both;
       }
       #volume{
-      	margin-top:40px;
       	background-color:white;
       	width:300px;
-      }
-      #volume_value{
-      	display:inline;
       }
     </style>
   </head>
@@ -135,27 +132,34 @@
 	      		<div id="fullscreen">Fullscreen</div>
 	      		<div id="placeholder">Placeholder</div>
   			</div> 
-  				Volume:
-  	   			<div id="volume">
-  				</div>
+  				
   	   		<div id="selections">
-	  		    <select id="video" class='media'>
-	  		      <option>--none--</option>
-	  		      {% for item in Movies %}
-	  		      <option>{{item}}</option>
-	  		      {% endfor %}
-	  		    </select>
-	  		    <select id="music" class='media'>
-	  		      <option>--none--</option>
-	  		      {% for item in Music %}
-	  		      <option>{{item}}</option>
-	  		      {% endfor %}
-	  		    </select>
-	  		    <select id="quality" class='media'>
-	  		    	<option>High</option>
-	  		    	<option>Medium</option>
-	  		    	<option>Low</option>
-	  		    </select>
+  	   			<div id="volume_control">
+  	   				Volume:
+  	   				<div id="volume">
+  	   				</div>
+  				</div>
+  				<div id="playlist">
+		  		    <select id="video" class='media'>
+		  		      <option>--none--</option>
+		  		      {% for item in Movies %}
+		  		      <option>{{item}}</option>
+		  		      {% endfor %}
+		  		    </select>
+		  		    <select id="music" class='media'>
+		  		      <option>--none--</option>
+		  		      {% for item in Music %}
+		  		      <option>{{item}}</option>
+		  		      {% endfor %}
+		  		    </select>
+		  		</div>
+		  		<div>
+		  		    <select id="quality" class='media'>
+		  		    	<option>High</option>
+		  		    	<option>Medium</option>
+		  		    	<option>Low</option>
+		  		    </select>
+		  		</div>
   			</div>
 		</div>
 	</div>
