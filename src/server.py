@@ -7,40 +7,27 @@ Created on Oct 14, 2011
 import cgi
 import os
 import sys
+import daemon
 import subprocess
 import socket
 import BaseHTTPServer
 import tempfile
 import threading
 import re
+import optparse
 from django import template
 from django.conf import settings
-settings.configure()
-
-
-def get_index(path='..', template_path='src/server.html.tmpl'):
-    movie_files = ['avi', 'm4v', 'mpg', 'wmv', 'mp4', 'mov', 'mkv', 'flv', 'rm', 'dv']
-    audio_files = ['mp3', 'wav']
-    nocrawl = open('src/nocrawl')
-    omitRE = nocrawl.read().strip()
-    t = template.Template(open(template_path, 'r').read())
-    c = template.Context({
-        'Movies': filter(lambda x: os.path.splitext(x)[1][1:] in movie_files and not re.search(omitRE, x), os.listdir(path)),
-        'Music': filter(lambda x: os.path.splitext(x)[1][1:] in audio_files and not re.search(omitRE, x), os.listdir(path))
-    })
-    return t.render(c)
-
-
-class PortBind(object):
-    def __init__(self, num):
-        self.num = str(num)
-        self.used = False
-    def __str__(self):
-        return '%s:%s' % (self.num, self.used)
+settings.configure()    
 
 
 class VLCProcess(subprocess.Popen):
-    USED_PORTS = map(lambda x: PortBind(x), range(33433, 33433 + 10))
+    class PortBind(object):
+        def __init__(self, num):
+            self.num = str(num)
+            self.used = False
+    
+    
+    USED_PORTS = map(lambda x: VLCProcess.PortBind(x), range(33433, 33433 + 10))
     port_in_use = None
 
     def __init__(self, *args):
@@ -105,14 +92,14 @@ class VLCProcess(subprocess.Popen):
             sout = transcode + ':' + standard
         return ['-vvv', '%s' % file_name, '-I', 'dummy', '--sout', '#' + sout]
 
-processes = {}
 class VLCThread(threading.Thread):
+    processes = {}
     def __init__(self, client, form):
         super(VLCThread, self).__init__()
         self.client = client
         self.form = form
-        if self.client in processes:
-            vlc = processes[self.client]
+        if self.client in self.processes:
+            vlc = self.processes[self.client]
             vlc.terminate()
             vlc.kill()
             VLCProcess.FreePort()
@@ -125,17 +112,34 @@ class VLCThread(threading.Thread):
     def run(self):
         print 'Streaming %s to %s on port %s' % (self.form['video'], self.client, self.form['port'])
         vlc = VLCProcess.Make('..', self.form)
-        processes[self.client] = vlc
+        self.processes[self.client] = vlc
 
  
 class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
+    dir = '..'
+    
+    @staticmethod
+    def SetDir(dir):
+        Handler.dir = dir
+    
     def do_GET(self):
         client_host, client_port = self.client_address
         print 'Serving %s to %s:%s' % (self.path, client_host, client_port)
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
-        self.wfile.write(get_index('..'))
+        movie_files = ['avi', 'm4v', 'mpg', 'wmv', 'mp4', 'mov', 'mkv', 'flv', 'rm', 'dv']
+        audio_files = ['mp3', 'wav']
+        nocrawl = open('src/.quickserve_ignore')
+        omitRE = nocrawl.read().strip()
+        t = template.Template(open('src/server.html.tmpl', 'r').read())
+        c = template.Context({
+            'Movies': filter(lambda x: os.path.splitext(x)[1][1:] in movie_files and
+                             not re.search(omitRE, x), os.listdir(self.dir)),
+            'Music': filter(lambda x: os.path.splitext(x)[1][1:] in audio_files and
+                            not re.search(omitRE, x), os.listdir(self.dir))
+        })
+        self.wfile.write(t.render(c))
         
     def do_POST(self):
         form = cgi.FieldStorage(
@@ -144,9 +148,7 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
                 environ={'REQUEST_METHOD':'POST',
                         'CONTENT_TYPE':self.headers['Content-Type']
                         })
-        data = {}
-        for field in form.keys():
-            data[field] = form[field].value
+        data = dict(form.iteritems())
 
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
@@ -157,21 +159,31 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile.flush()
 
 
-def main():
-    port = 80
-    try:
-        server = BaseHTTPServer.HTTPServer(("", port), Handler)
-    except socket.error:
-        port = 8888
-        server = BaseHTTPServer.HTTPServer(("", port), Handler)
+def main(args):
+    port = args.port
+    Handler.SetDir(args.dir)
+    server = BaseHTTPServer.HTTPServer(("", port), Handler)
     print 'Serving media on port %s' % port
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         server.server_close()
-        print 'shutting down'
+        print ' shutting down'
 
 
 if __name__ == '__main__':
-    main()
+    parser = optparse.OptionParser()
+    parser.add_option('-p', '--port', help='The port to host the landing page on.', default='8888')
+    parser.add_option('-d', '--dir', help='The root dir for media.', default='..')
+    parser.add_option('-z', '--daemon', help='Whether to run the server as a daemon.', action='store_true')
+    options, args = parser.parse_args()
+    if options.daemon:
+        output = open(tempfile.mkstemp()[0], "w+")
+        error = open(tempfile.mkstemp()[0], "w+")
+
+        with daemon.DaemonContext(working_directory=os.getcwd(),
+                                  stdout=output, stderr=error):
+            main(options);
+    else:
+        main(options)
         

@@ -4,28 +4,21 @@ show=
 
 while getopts "sk" flag
 do
-    case $flag in
-    	s)
-	    echo "Running in foreground"
-	    show="t"
-	    ;;
-	k)
-	    echo "Killing the process"
-	    py=`ps aux | grep '[d]aemonStart.py' | wc -l`
-	    if [ $py -gt 0 ] ; then
-	        ps aux | grep '[d]aemonStart.py' | awk '{print $2}' | xargs kill -9
-	    fi
-	    vlc=`ps aux | grep '[V]LC' | wc -l`
-	    if [ $vlc -gt 0 ] ; then
-	        ps aux | grep '[V]LC' | awk '{print $2}' | xargs kill -9
-	    fi
-	    exit
-	    ;;
-	?)
-	    echo "UNKNOWN"
-	    exit
-	    ;;
-    esac
+  case $flag in
+  	k)
+      echo "Killing the process"
+      py=`ps aux | grep '[d]aemonStart.py' | wc -l`
+      if [ $py -gt 0 ] ; then
+          ps aux | grep '[d]aemonStart.py' | awk '{print $2}' | xargs kill -9
+      fi
+      vlc=`ps aux | grep '[V]LC' | wc -l`
+      if [ $vlc -gt 0 ] ; then
+          ps aux | grep '[V]LC' | awk '{print $2}' | xargs kill -9
+      fi
+      exit
+      ;;
+    ?) ;;
+  esac
 done
 
 # Ensure that VLC is installed
@@ -48,8 +41,5 @@ fi
 
 # Start the streaming server
 if [ "$show" = "t" ] ; then
-	python src/server.py
-else
-	python src/daemonStart.py &
-fi
+	python src/server.py $@
 exit

@@ -1,12 +1,12 @@
 import daemon
 import os
+import server
+import tempfile
 
-from server import main
 
-output = open("tmp.txt", "w+")
-error = open("err.txt", "w+")
+output = open(tempfile.mkstemp()[0], "w+")
+error = open(tempfile.mkstemp()[0], "w+")
 
 with daemon.DaemonContext(working_directory=os.getcwd(),
-		stdout=output,
-		stderr=error):
-	main();
+		stdout=output, stderr=error):
+	server.main();
