@@ -126,6 +126,9 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         Handler.dir = dir
     
     def do_GET(self):
+        if self.path != '/':
+            self.send_error(404, 'only / is here')
+            return
         client_host, client_port = self.client_address
         print 'Serving %s to %s:%s' % (self.path, client_host, client_port)
         self.send_response(200)
