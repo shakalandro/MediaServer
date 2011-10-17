@@ -137,10 +137,10 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         omitRE = nocrawl.read().strip()
         t = template.Template(open('src/server.html.tmpl', 'r').read())
         c = template.Context({
-            'Movies': filter(lambda x: os.path.splitext(x)[1][1:] in movie_files and
-                             not re.search(omitRE, x), os.listdir(self.dir)),
-            'Music': filter(lambda x: os.path.splitext(x)[1][1:] in audio_files and
-                            not re.search(omitRE, x), os.listdir(self.dir))
+            'Movies': map(lambda x: str(x), filter(lambda x: os.path.splitext(x)[1][1:] in movie_files and
+                             not re.search(omitRE, x), os.listdir(self.dir))),
+            'Music': map(lambda x: str(x), filter(lambda x: os.path.splitext(x)[1][1:] in audio_files and
+                            not re.search(omitRE, x), os.listdir(self.dir)))
         })
         self.wfile.write(t.render(c))
         
