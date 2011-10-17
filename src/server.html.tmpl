@@ -7,31 +7,7 @@
     <script type="text/javascript" src="http://fgnass.github.com/spin.js/spin.min.js"></script>
     <script type="text/javascript">
         var serverIP;
-        var spinner;
-    
- 		function showSpinner(){
-     		var opts = {
-     			lines: 12,
-     			length: 21,
-     			width: 10,
-     			color: '#fff',
-     			radius: 30,
-     			trail: 52,
-     			speed: 1.0,
-     			shadow: false
-     		};
-      	
-	      	var target = document.getElementById("spinner");
-	      	spinner = new Spinner(opts).spin(target);
-	      	$("#spinner").show();
-     	 }    	
-     	 
-     	 function hideSpinner(){
-              spinner.stop();
-			         $("#spinner").hide();
-     	 }
-    	
-    	
+
         function sendRequest() {
             $.ajax({
                 url: "/stream:8888",
@@ -41,11 +17,10 @@
                     'quality': $('#quality').val()
                 },
                 success: function(data) {
+                    console.log('ret');
                     vlc.playlist.stop();
                     vlc.playlist.clear();
-                    showSpinner();
                     setTimeout(function() {
-                    	hideSpinner();
                         console.log('playing http://' + serverIP + ':' + data);
                         if (vlc.playlist.items.count <= 0) {
                             vlc.playlist.add('http://' + serverIP + ':' + data);
@@ -261,8 +236,6 @@
 	  		    </select>
   			</div>
 		  	<div id="player">
-		  		<div id="spinner">
-		  		</div>
 		    	<embed id='vlc' type="application/x-vlc-plugin" name="video2"
               autoplay="no" loop="no" hidden="yes" width=640 height=480 />
 		      <div id="slider"></div>

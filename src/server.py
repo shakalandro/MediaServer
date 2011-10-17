@@ -20,21 +20,23 @@ from django.conf import settings
 settings.configure()    
 
 
-class VLCProcess(subprocess.Popen):
-    class PortBind(object):
+class PortBind(object):
         def __init__(self, num):
             self.num = str(num)
             self.used = False
+
+
+class VLCProcess(subprocess.Popen):
     
-    
-    USED_PORTS = map(lambda x: VLCProcess.PortBind(x), range(33433, 33433 + 10))
+    USED_PORTS = map(lambda x: PortBind(x), range(33433, 33433 + 10))
     port_in_use = None
 
     def __init__(self, *args):
-        self.instr = tempfile.mkstemp()[0]
-        self.outstr = tempfile.mkstemp()[0]
-        super(VLCProcess, self).__init__(*args, stdout=self.outstr, stderr=self.outstr,
-                                         stdin=self.instr)
+        #self.instr = tempfile.mkstemp()[0]
+        #self.outstr = tempfile.mkstemp()[0]
+        #super(VLCProcess, self).__init__(*args, stdout=self.outstr, stderr=self.outstr,
+        #                                 stdin=self.instr)
+        super(VLCProcess, self).__init__(*args)
     
     def get_out(self):
         return self.outstr.read()
@@ -94,9 +96,10 @@ class VLCProcess(subprocess.Popen):
 
 class VLCThread(threading.Thread):
     processes = {}
-    def __init__(self, client, form):
+    def __init__(self, dir, client, form):
         super(VLCThread, self).__init__()
         self.client = client
+        self.dir = dir
         self.form = form
         if self.client in self.processes:
             vlc = self.processes[self.client]
@@ -111,7 +114,7 @@ class VLCThread(threading.Thread):
         
     def run(self):
         print 'Streaming %s to %s on port %s' % (self.form['video'], self.client, self.form['port'])
-        vlc = VLCProcess.Make('..', self.form)
+        vlc = VLCProcess.Make(self.dir, self.form)
         self.processes[self.client] = vlc
 
  
@@ -142,18 +145,17 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile.write(t.render(c))
         
     def do_POST(self):
-        form = cgi.FieldStorage(
-                fp=self.rfile, 
-                headers=self.headers,
-                environ={'REQUEST_METHOD':'POST',
-                        'CONTENT_TYPE':self.headers['Content-Type']
-                        })
-        data = dict(form.iteritems())
+        form = cgi.FieldStorage(fp=self.rfile, headers=self.headers,
+                                environ={'REQUEST_METHOD':'POST',
+                                         'CONTENT_TYPE':self.headers['Content-Type']
+                                         })
+        data = dict(map(lambda x: (str(x), form[x].value), form.keys()))
+        print data
 
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
         self.end_headers()
-        th = VLCThread(self.client_address, data)
+        th = VLCThread(self.dir, self.client_address, data)
         self.wfile.write(th.GetPort())
         th.start()
         self.wfile.flush()
@@ -173,9 +175,11 @@ def main(args):
 
 if __name__ == '__main__':
     parser = optparse.OptionParser()
-    parser.add_option('-p', '--port', help='The port to host the landing page on.', default='8888')
+    parser.add_option('-p', '--port', help='The port to host the landing page on.',
+                      type='int', default=8888)
     parser.add_option('-d', '--dir', help='The root dir for media.', default='..')
-    parser.add_option('-z', '--daemon', help='Whether to run the server as a daemon.', action='store_true')
+    parser.add_option('-z', '--daemon', help='Whether to run the server as a daemon.',
+                      action='store_true')
     options, args = parser.parse_args()
     if options.daemon:
         output = open(tempfile.mkstemp()[0], "w+")
