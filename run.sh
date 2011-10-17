@@ -13,7 +13,7 @@ if [ "$1" = "-k" ] ; then
   exit
 else
   # Ensure that VLC is installed
-  if command -v vim > /dev/null ; then
+  if command -v vlc > /dev/null ; then
     echo "VLC is installed."
   else
     echo "Please install VLC."
