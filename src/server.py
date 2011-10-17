@@ -124,6 +124,13 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
     @staticmethod
     def SetDir(dir):
         Handler.dir = dir
+        
+    def isAscii(self, s):
+        try:
+            s.decode('ascii')
+            return True
+        except UnicodeDecodeError:
+            return False
     
     def do_GET(self):
         if self.path != '/':
@@ -140,10 +147,10 @@ class Handler(BaseHTTPServer.BaseHTTPRequestHandler):
         omitRE = nocrawl.read().strip()
         t = template.Template(open('src/server.html.tmpl', 'r').read())
         c = template.Context({
-            'Movies': map(lambda x: str(x), filter(lambda x: os.path.splitext(x)[1][1:] in movie_files and
-                             not re.search(omitRE, x), os.listdir(self.dir))),
-            'Music': map(lambda x: str(x), filter(lambda x: os.path.splitext(x)[1][1:] in audio_files and
-                            not re.search(omitRE, x), os.listdir(self.dir)))
+            'Movies': filter(lambda x: os.path.splitext(x)[1][1:] in movie_files and
+                             not re.search(omitRE, x) and self.isAscii(x), os.listdir(self.dir)),
+            'Music': filter(lambda x: os.path.splitext(x)[1][1:] in audio_files and
+                            not re.search(omitRE, x) and self.isAscii(x), os.listdir(self.dir))
         })
         self.wfile.write(t.render(c))
         
