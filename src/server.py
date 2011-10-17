@@ -182,8 +182,8 @@ if __name__ == '__main__':
                       action='store_true')
     options, args = parser.parse_args()
     if options.daemon:
-        output = open(tempfile.mkstemp()[0], "w")
-        error = open(tempfile.mkstemp()[0], "w")
+        output = tempfile.mkstemp()[0]
+        error = tempfile.mkstemp()[0]
 
         with daemon.DaemonContext(working_directory=os.getcwd(),
                                   stdout=output, stderr=error):
