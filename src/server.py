@@ -7,7 +7,6 @@ Created on Oct 14, 2011
 import cgi
 import os
 import sys
-import daemon
 import subprocess
 import socket
 import BaseHTTPServer
@@ -17,8 +16,10 @@ import re
 import optparse
 from django import template
 from django.conf import settings
-settings.configure()    
+settings.configure()
 
+sys.path.append(os.path.join(os.getcwd(), 'python-daemon-1.5.5'))
+import daemon
 
 class PortBind(object):
         def __init__(self, num):
