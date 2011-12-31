@@ -22,9 +22,9 @@ sys.path.append(os.path.join(os.getcwd(), 'python-daemon-1.5.5'))
 import daemon
 
 class PortBind(object):
-        def __init__(self, num):
-            self.num = str(num)
-            self.used = False
+    def __init__(self, num):
+        self.num = str(num)
+        self.used = False
 
 
 class VLCProcess(subprocess.Popen):
@@ -37,7 +37,7 @@ class VLCProcess(subprocess.Popen):
         #self.outstr = tempfile.mkstemp()[0]
         #super(VLCProcess, self).__init__(*args, stdout=self.outstr, stderr=self.outstr,
         #                                 stdin=self.instr)
-        super(VLCProcess, self).__init__(*args)
+        super(VLCProcess, self).__init__(*args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
     def get_out(self):
         return self.outstr.read()
@@ -91,8 +91,10 @@ class VLCProcess(subprocess.Popen):
         transcode = 'transcode{vb=%s}' % (quality)
         standard = 'standard{mux=%s,dst=%s:%s,access=http}' % (mux, ip, port)
         sout = standard
-        if quality:
+        # TODO: quality does not work yet
+        if quality and False:
             sout = transcode + ':' + standard
+        print ' '.join(['-vvv', '%s' % file_name, '-I', 'dummy', '--sout', '#' + sout])
         return ['-vvv', '%s' % file_name, '-I', 'dummy', '--sout', '#' + sout]
 
 class VLCThread(threading.Thread):
@@ -114,7 +116,8 @@ class VLCThread(threading.Thread):
         return self.port_num
         
     def run(self):
-        print 'Streaming %s to %s on port %s' % (self.form['video'], self.client, self.form['port'])
+        print 'Streaming %s to %s:%s on port %s' % (self.form['video'], self.client[0],
+                                                    self.client[1], self.form['port'])
         vlc = VLCProcess.Make(self.dir, self.form)
         self.processes[self.client] = vlc
 
